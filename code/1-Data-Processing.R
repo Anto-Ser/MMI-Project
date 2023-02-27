@@ -44,10 +44,6 @@ names(df_MI) = str_replace(names(df_MI), "_Blood", "_CTC")
 
 ## -- Info data frame for experiment and mice:
 
-info = read_xlsx("./data/Info_All_mice_PhD.xlsx")
-MI_info = info[,1:6]
-names(MI_info)[2] = "Mouse"
+MI_info = read.csv("./data/Info_mice.csv")
 MI_info$Mouse = as.character(MI_info$Mouse)
-
-
 

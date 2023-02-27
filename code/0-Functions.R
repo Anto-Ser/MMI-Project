@@ -4,9 +4,8 @@ Packages = c("dplyr", "stringr", "readxl", "tidyr", "ggplot2",
              "reshape2", "corrplot", "viridis", "grid", "gridExtra", "gridGraphics",
              "janitor", "RColorBrewer","ggbeeswarm", "ggpubr", "vegan", "ggcorrplot", "randomcoloR",
              "scales", "networkD3", "gridGraphics", "grid", "plyr", "tibble","ggthemes", "circlize",
-             "writexl", "mdthemes")
+             "writexl", "mdthemes", "ggpmisc")
 
-#install.packages("writexl")  #heatmaply   lares corrr   ComplexHeatmap circlize  kableExtra  packcircles
 
 lapply(Packages, library, character.only = TRUE)
 
@@ -99,7 +98,7 @@ Filter_by_Tum = function(data, CPM=TRUE, filter=TRUE){
   return(df.merged)
 }
 
-#--- Merge samples I (ex:Lung LungI) as a single sample
+#--- Merge samples labeled nameI (ex:Lung LungI) as a single sample
 
 merge_sampleI = function(data, CPM=TRUE){
   #data=df.PCR.Tum.Filt
