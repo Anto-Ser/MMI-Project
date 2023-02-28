@@ -2,14 +2,14 @@
 
 rm(list=setdiff(ls(), c("df_MI", "MI_info", "Number_barcode", "Bubble_plot", "Stacked_histo", "Select_and_order_Organs")))
 
-  ## --- MDA-231  ----
+## --- MDA-231  ----
 MDA.color = read.csv("./data/Colour_MDA_Histo.csv")
 
 MDA.tum = Select_and_order_Organs(df_MI, Model = "MDA-231", Organ = "Tum", info_dataframe = Number_barcode)
 
 MDA.tum.histo = Stacked_histo(MDA.tum, angle.x = 90, my_col = MDA.color$x)
 
-MDA.tum.histo$Stack.plot #Exported as PDF 5x12
+MDA.tum.histo$Stack.plot # Exported as PDF 5x12
 #MDA.tum.histo$Colour
 
 MDA.tum.exp1= MDA.tum[,grep("Exp38_", names(MDA.tum))]
@@ -25,10 +25,10 @@ MDA.tum.histo2$Stack.plot #Exported as PDF 5x11
 MDA.tum.histo3$Stack.plot #Exported as PDF 5x8
 
 
-## --- Bubble plot for all organs grouped for MDA ----
+## --- Figure 1 c) Bubble plot for MDA tumours ----
 
-Col.MDA.bbp = read.csv("Y.Position_Colours_MDA_bubbles.csv")$Colours
-Y.MDA.bbp = read.csv("Y.Position_Colours_MDA_bubbles.csv")$Y.Position
+Col.MDA.bbp = read.csv("./data/Y.Position_Colours_MDA_bubbles.csv")$Colours
+Y.MDA.bbp = read.csv("./data/Y.Position_Colours_MDA_bubbles.csv")$Y.Position
 
 MDA.tum = Select_and_order_Organs(df_MI, "MDA-231", "Tum", info_dataframe = Number_barcode)
 
@@ -41,6 +41,7 @@ names(MDA.tum)[11:24]
 MDA.tum.bbp = Bubble_plot(MDA.tum, angle.x = 90, Y = "input", data2=Y.MDA.bbp, my_col = Col.MDA.bbp)
 MDA.tum.bbp$BBP #6x20
 
+## --- Supp Figure 2 d) Bubble plot MDA tumours by experiments ----
 MDA.tum.exp1= MDA.tum[,grep("Exp38_", names(MDA.tum))]
 MDA.tum.exp2= MDA.tum[,grep("Exp1009_", names(MDA.tum))]
 MDA.tum.exp3= MDA.tum[,grep("Exp1011_", names(MDA.tum))]
@@ -53,9 +54,10 @@ MDA.tum.bbp_1$BBP #5x8
 MDA.tum.bbp_2$BBP #5x11
 MDA.tum.bbp_3$BBP#5x8
 
-## --- PDX-412  ----
+## --- Supp Figure 1 i) Stack histogram PDX-412 tumours ----
+
 PDX.tum = Select_and_order_Organs(df_MI, "PDX-T412", "Tum", info_dataframe = Number_barcode)
-PDX.color = read.csv("Colour_PDX_Histo.csv")
+PDX.color = read.csv("./data/Colour_PDX_Histo.csv")
 
 names(PDX.tum)[11:20]
 
@@ -67,7 +69,14 @@ PDX.tum.histo = Stacked_histo(PDX.tum, angle.x = 90, my_col = PDX.color$x)
 
 PDX.tum.histo$Stack.plot #5x12
 
-MDA.tum = Select_and_order_Organs(df.MI, "MDA-231", "Liver", info_dataframe = Number_barcode)
+## --- Supp Figure 7 Bubble plot MDA-231 organs and PDX-412 organs ----
+
+
+MDA.tum = Select_and_order_Organs(df_MI, "MDA-231", "Lung", info_dataframe = Number_barcode)
+MDA.tum.bbp = Bubble_plot(MDA.tum, angle.x = 90, Y = "input", data2=Y.MDA.bbp, my_col = Col.MDA.bbp)
+MDA.tum.bbp$BBP #6x20
+
+MDA.tum = Select_and_order_Organs(df_MI, "MDA-231", "Liver", info_dataframe = Number_barcode)
 MDA.tum.bbp = Bubble_plot(MDA.tum, angle.x = 90, Y = "input", data2=Y.MDA.bbp, my_col = Col.MDA.bbp)
 MDA.tum.bbp$BBP #6x20
 

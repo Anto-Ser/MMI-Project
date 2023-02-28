@@ -9,7 +9,7 @@ names(Number_barcode) = c("Full_name","bc","Shannon", "Exp","Mouse","Org")
 
 Number_barcode = Number_barcode %>%
   select(Full_name, Mouse,Org,bc, Shannon) %>%
-  filter(Org %in% c("Tum","CTC","Liver","Lung","Liver1","Lung1","Liver2","SNLiver","SNLung","Blood", "Ov","Heart","PE")) %>%
+  filter(Org %in% c("Tum","CTC","Liver","Lung")) %>%
   as.data.frame()
 
 Number_barcode= left_join(Number_barcode, MI_info, by="Mouse")
@@ -20,6 +20,7 @@ Number_barcode[is.na(Number_barcode)] <- 0
 
 #write.csv(Number_barcode, file="Nb_barcode_ALL_MI.csv")
 
+
 # --- Figure 1 barplot with number of barcode per model: ----
 
 Number_barcode = Number_barcode %>% group_by(Org, Cells, MI) %>% dplyr::mutate(mean_bc = mean(bc),
@@ -27,15 +28,13 @@ Number_barcode = Number_barcode %>% group_by(Org, Cells, MI) %>% dplyr::mutate(m
                                                                        mean_shannon = mean(Shannon),
                                                                        sd_shannon = sd(Shannon))
 
-my_comparisons = list(c("IMFPc", "ID"), c("IMFP", "ID"), c("SC", "ID"), c("IMFP", "SC"), c("IMFP", "IMFPc"), c("IMFPc", "SC"),
-                      c("IV", "IMFP"), c("IV", "IMFPc"), c("IV", "SC"), c("IV", "ID"))
-my_comparisons = list(c("IMFPc", "ID"), c("IMFP", "ID"), c("SC", "ID"), c("IMFP", "SC"), c("IMFP", "IMFPc"), c("IMFPc", "SC"))
 
 
-# --- Figure 1 e) f) barplot with Fold change and Shannon diversity index: ----
+# --- Function to generate barplots in Figure 1, 3, and Supp figure 1, 5 ----
 
-Organ = "Tum"
-Model = "MDA-231" # Change for "PDX-T412" for Figure 1 f)
+Figure_1 = function(Organ, Model){
+
+#my_comparisons = list(c("IMFPc", "ID"), c("IMFP", "ID"), c("SC", "ID"), c("IMFP", "SC"), c("IMFP", "IMFPc"), c("IMFPc", "SC"))
 
 Mean_bc_MDA_IMFP = Number_barcode %>% filter(Org == Organ & Cells == Model) %>%
   group_by(MI) %>%
@@ -69,7 +68,7 @@ p1 = Number_barcode_fig %>% filter(Org == Organ) %>%
 
 # ANOVA and Tukey follow test:
 model <- aov(fold~MI, data=Number_barcode_fig)
-summary(model)
+#summary(model)
 t1 = TukeyHSD(model, conf.level=.95)
 t2 = as.data.frame(t1$MI)
 
@@ -92,7 +91,7 @@ p3 = Number_barcode_fig %>% filter(Org == Organ) %>%
 
 # ANOVA and Tukey follow test:
 model <- aov(Shannon~MI, data=Number_barcode_fig)
-summary(model)
+#summary(model)
 t1 = TukeyHSD(model, conf.level=.95)
 t2 = as.data.frame(t1$MI)
 
@@ -101,14 +100,8 @@ p4 = ggplot()+
   annotate(geom = 'table',x=1, y=3, label = list(data.frame(comp = row.names(t2), p_adj = t2[,"p adj"])))+
   theme_void()
 
-
-ggarrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
-
-
-# --- Supp Figure 1 d) barplot of barcode number: ----
-
 # plot of barcode number:
-p1 = Number_barcode_fig %>% filter(Org == Organ) %>%
+p5 = Number_barcode_fig %>% filter(Org == Organ) %>%
   ggplot(aes(x=MI,y=bc))+
   geom_bar(aes(fill=MI), stat = "summary", fun = "mean")+
   geom_errorbar(aes(ymin=mean_bc-sd_bc, ymax=mean_bc+sd_bc), width=0.1)+
@@ -118,7 +111,7 @@ p1 = Number_barcode_fig %>% filter(Org == Organ) %>%
   stat_compare_means(label.y = 5.3, method = "anova")+
   theme_classic2()+
   facet_wrap(~Cells) # 5x4 landscapre
-  #scale_y_continuous(limits = c(-3,10), breaks = c(-3,-2,-1,0,1,2,3))
+#scale_y_continuous(limits = c(-3,10), breaks = c(-3,-2,-1,0,1,2,3))
 
 
 # ANOVA and Tukey follow test
@@ -127,15 +120,23 @@ summary(model)
 t1 = TukeyHSD(model, conf.level=.95)
 t2 = as.data.frame(t1$MI)
 
-p2 = ggplot()+
+p6 = ggplot()+
   labs(subtitle = "Tukey multiple comparison test:")+
   annotate(geom = 'table',x=1, y=3, label = list(data.frame(comp = row.names(t2), p_adj = t2[,"p adj"])))+
   theme_void()
 
-ggarrange(p1, p2)
+ggarrange(p1, p2, p3, p4,p5,p6, nrow = 3, ncol = 2)
 
+}
 
-# --- Supp Figure 5 b) + c)   PDX Organs number of barcode (including 0 (IV and ID mice)) ----
+# --- Figure 1 e) barplot with Fold change and Shannon diversity index and Supp figure 1 d) number of barcodes ----
+
+Figure_1("Tum", "MDA-231") # Figure 1 f) and Supp Fig 1 d)
+
+# --- Figure 1 f) barplot with Fold change and Shannon diversity index and Supp figure 1 d) number of barcodes ----
+Figure_1("Tum", "PDX-T412") # Figure 1 f) and Supp Fig 1 d)
+
+# --- Supp Figure 5 b)   PDX Organs number of barcode (including 0 (IV and ID mice)) ----
 
 MI = c("IMFPc", "IMFP", "SC", "ID", "IV")
 com = expand.grid(MI,MI)
@@ -144,7 +145,8 @@ com = as.matrix(com[!com$V1 == com$V2,])
 my_comparisons = split(com, seq(nrow(com)))
 
 
-Organ = "Lung"
+Organ = "CTC" # Change to "CTC" or "Liver" for other organs
+
 PDX_Ref = Number_barcode %>% filter(Cells == "PDX-T412" & Org == "Tum") %>% select(Exp, Mouse, Cells, MI, Org)
 PDX_bc = Number_barcode %>% filter(Cells == "PDX-T412" & Org == Organ) %>% select(Exp, Mouse, Cells, MI, Org, bc, Shannon)
 info_pdx_iv = MI_info %>% filter(Cells == "PDX-T412", Project == "MI", MI == "IV") %>% select(Exp, Mouse, Cells, MI)
@@ -192,40 +194,31 @@ model <- aov(Shannon~MI, data=PDX_bc)
 summary(model)
 TukeyHSD(model, conf.level=.95)
 
-
-# --- Supp Figure 5 c) MDA  number of barcode in Organs ----
-
-Number_barcode %>% filter(Cells == "MDA-231" & Org %in% c("CTC", "Lung", "Liver")) %>%
-  ggplot(aes(x=MI,y=Shannon))+
-  geom_bar(aes(fill=MI), stat = "summary", fun = "mean")+
-  geom_errorbar(aes(ymin=mean_shannon-sd_shannon, ymax=mean_shannon+sd_shannon), width=0.1)+
-  geom_quasirandom(aes(shape=as.factor(Exp)), size=2, width = 0.1)+
-  labs(x="", y="Number of barcodes", subtitle = paste(Model, Organ, "number of barcodes"))+
-  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test", hide.ns = FALSE)+
-  stat_compare_means(label.y = 6, method = "anova")+
-  theme_classic()+
-  facet_wrap(~Org) #4x10
-
-
-# Tumour + IV lung comparison :
+# --- Supp Figure 5 e) f) Tumour + IV lung comparison ----
 
 Number_barcode %>% filter(Cells == "MDA-231" & Org %in% c("Lung") & MI == "IV") %>%
   full_join(Number_barcode %>% filter(Cells == "MDA-231" & Org %in% c("Tum")))%>%
   dplyr::mutate(Org_2 = "Tum2") %>%
-  ggplot(aes(x=MI,y=Shannon))+
+  ggplot(aes(x=MI,y=bc))+
   geom_bar(aes(fill=MI), stat = "summary", fun = "mean")+
-  geom_errorbar(aes(ymin=mean_shannon-sd_shannon, ymax=mean_shannon+sd_shannon), width=0.1)+
-  geom_quasirandom(aes(shape=Exp), size=2, width = 0.1)+
-  labs(x="", y="Number of barcodes", subtitle = paste(Model, Organ, "number of barcodes"))+
-  stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test", hide.ns = FALSE)+
+  geom_errorbar(aes(ymin=mean_bc-sd_bc, ymax=mean_bc+sd_bc), width=0.1)+
+  geom_quasirandom(aes(shape=as.factor(Exp)), size=2, width = 0.1)+
+  labs(x="", y="Number of barcodes", subtitle = "MDA-231 number of barcodes in Tumour vs Lung IV")+
+  #stat_compare_means(comparisons = my_comparisons, label = "p.signif", method = "wilcox.test", hide.ns = FALSE)+
   stat_compare_means(label.y = 6, method = "anova")+
-  theme_classic()+
-  facet_wrap(~Org_2) #4x5
+  theme_classic()#4x5
 
 lung_tum = Number_barcode %>% filter(Cells == "MDA-231" & Org %in% c("Lung") & MI == "IV") %>%
   full_join(Number_barcode %>% filter(Cells == "MDA-231" & Org %in% c("Tum")))%>%
   dplyr::mutate(Org_2 = "Tum2")
 
-model <- aov(Shannon~MI, data=lung_tum)
+model <- aov(bc~MI, data=lung_tum)
 summary(model)
 TukeyHSD(model, conf.level=.95)
+
+# --- Figure 4 a) and Supp Figure 5 c) d) MDA organs ----
+
+Figure_1("Lung", "MDA-231")
+Figure_1("CTC", "MDA-231")
+Figure_1("Liver", "MDA-231")
+
